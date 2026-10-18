@@ -3,6 +3,7 @@ import { HealthProvider } from "@/components/health-provider";
 import { AppShell } from "@/components/app-shell";
 import "./globals.css";
 export const metadata: Metadata = {
+  icons: { icon: "/icon.svg" },
   title: { default: "轻养 · 让健康自然发生", template: "%s · 轻养" },
   description: "你的饮食、运动与情绪健康空间。健康 H5 交互演示。",
 };

@@ -1,4 +1,9 @@
 import { test, expect } from "@playwright/test";
+test.beforeEach(async({page})=>{
+ await page.addInitScript(()=>{try{localStorage.setItem('qingyang-account-id','e2e-demo');}catch{}});
+ await page.route('**/api/v1/me',route=>route.fulfill({json:{data:{id:'e2e-demo',nickname:'测试用户',email:'t***@example.com',joinedAt:'2026-10-19T00:00:00Z',timezone:'Asia/Shanghai'}}}));
+});
+
 test("shell fits phone and desktop and modal restores focus", async ({
   page,
 }) => {
@@ -169,7 +174,7 @@ test("an action after Shanghai midnight records the new day before timers refres
     .poll(() =>
       page.evaluate(
         () =>
-          JSON.parse(localStorage.getItem("qingyang-health-v1")!).state
+          JSON.parse(localStorage.getItem("qingyang-health-v1:e2e-demo")!).state
             .dailyRecords["2026-10-19"]?.water,
       ),
     )

@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { AccountSummary } from "@/components/account-summary";
 import {
   Check,
   Gift,
@@ -74,15 +75,7 @@ export function Profile() {
         </div>
       </section>
       <section className="profile-banner">
-        <div className="avatar">Y</div>
-        <div>
-          <h2>小予</h2>
-          <p>好好生活的第 12 天 · 演示档案</p>
-          <span className="tag white" style={{ marginTop: 10 }}>
-            <Target size={12} />
-            目标：规律生活，轻盈有力
-          </span>
-        </div>
+        <AccountSummary />
         <button
           className="outline-button"
           onClick={() => {

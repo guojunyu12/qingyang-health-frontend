@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { HealthProvider } from "@/components/health-provider";
-import { AppShell } from "@/components/app-shell";
+import { AuthProvider } from "@/components/auth-provider";
 import "./globals.css";
 export const metadata: Metadata = {
   icons: { icon: "/icon.svg" },
@@ -20,9 +19,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <a className="skip-link" href="#main">
           跳转到主要内容
         </a>
-        <HealthProvider>
-          <AppShell>{children}</AppShell>
-        </HealthProvider>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

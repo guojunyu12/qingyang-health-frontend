@@ -11,7 +11,7 @@ npm ci
 npm run dev
 ```
 
-打开 http://127.0.0.1:3001 。根路径自动进入今日看板。
+打开 http://127.0.0.1:3001 。当前源码已接入真实邮箱登录，需要先启动独立后端API和媒体Worker，见后端仓库的交付说明；未登录会进入 `/login`。线上旧演示部署尚未替换。
 
 ```sh
 npm test
@@ -26,6 +26,7 @@ npm run test:e2e
 
 | 路径 | 页面 |
 | --- | --- |
+| /login | 邮箱验证码注册 / 登录 |
 | /dashboard | 每日健康日记、饮水、体重、营养概览 |
 | /nutrition | 饮食日记、照片预览与模拟识别、餐厅筛选与收藏 |
 | /training | 课程、训练计时、打卡、提醒设置 |
@@ -57,3 +58,7 @@ npm run test:e2e
 ## GitHub 代码管理
 
 前后端分别管理，见 [仓库管理说明](docs/repository-management.md)。后端位于独立 Git 仓库 `server/`。
+
+## M01账号能力
+
+邮箱验证码、会话恢复/退出、昵称/头像编辑及站内通知已经连接本地后端。其余健康业务仍为演示，并按账号隔离本机数据。Web Push待配置。后端启动与建库SQL见 [后端交付说明](https://github.com/guojunyu12/qingyang-health-backend/blob/codex/m01-email-auth/docs/HANDOFF-M01.md)。

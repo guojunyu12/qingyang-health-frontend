@@ -20,7 +20,8 @@ const Context = createContext<{
   today: string;
   storageWarning: string;
 }>(null!);
-export function HealthProvider({ children }: { children: ReactNode }) {
+export function HealthProvider({ children, userId }: { children: ReactNode; userId: string }) {
+  const accountStorage = { getItem: (_key: string) => window.localStorage.getItem("qingyang-health-v1:" + userId), setItem: (_key: string, value: string) => window.localStorage.setItem("qingyang-health-v1:" + userId, value) };
   const [state, rawDispatch] = useReducer(healthReducer, makeSeed());
   const [ready, setReady] = useState(false);
   const [today, setToday] = useState("2026-10-18");
@@ -28,7 +29,7 @@ export function HealthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let result;
     try {
-      result = readState(window.localStorage);
+      result = readState(accountStorage);
     } catch {
       result = {
         state: makeSeed(shanghaiDate()),
@@ -52,7 +53,7 @@ export function HealthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!ready) return;
     try {
-      if (!writeState(window.localStorage, state))
+      if (!writeState(accountStorage, state))
         setWarning("浏览器无法保存记录，请检查存储空间或隐私设置。");
     } catch {
       setWarning("浏览器无法保存记录，本次记录刷新后可能丢失。");

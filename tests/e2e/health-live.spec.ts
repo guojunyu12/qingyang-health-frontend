@@ -8,7 +8,7 @@ test('live email session → profile → water/weight → reload → 30-day over
  await page.getByLabel('邮箱地址').fill(`m02-browser-${crypto.randomUUID()}@example.com`);
  await page.getByRole('button',{name:'获取验证码'}).click();
  await expect(page.getByRole('status')).toContainText('验证码已发送');
- const code=await readFile(resolve('server/.local/m02-e2e-code'),'utf8');
+ const code=await readFile(resolve(process.env.QY_E2E_CODE_FILE??'server/.local/m02-e2e-code'),'utf8');
  await page.getByLabel('验证码',{exact:true}).fill(code);
  await page.getByRole('button',{name:'登录 / 注册'}).click();
  await expect(page).toHaveURL(/\/dashboard$/);

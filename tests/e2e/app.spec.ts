@@ -1,7 +1,9 @@
+import { installNutritionFixture } from "../support/nutrition-fixture";
 import { installHealthFixture } from "../support/health-fixture";
 import { test, expect } from "@playwright/test";
 test.beforeEach(async({page})=>{
  await installHealthFixture(page);
+ await installNutritionFixture(page);
  await page.addInitScript(()=>{try{localStorage.setItem('qingyang-account-id','e2e-demo');}catch{}});
  await page.route('**/api/v1/me',route=>route.fulfill({json:{data:{id:'e2e-demo',nickname:'测试用户',email:'t***@example.com',joinedAt:'2026-10-19T00:00:00Z',timezone:'Asia/Shanghai'}}}));
 });
@@ -27,7 +29,7 @@ test("shell fits phone and desktop and modal restores focus", async ({
   await page.keyboard.press("Escape");
   await expect(b).toBeFocused();
 });
-test("water and meal persist, invalid photo is rejected", async ({ page }) => {
+test("water and real-contract meal UI persist; invalid photo is rejected", async ({ page }) => {
   await page.goto("/dashboard");
   await page.getByRole("button", { name: "喝一杯水" }).click();
   await expect(page.getByTestId("water-value")).toHaveText("250");
@@ -35,25 +37,14 @@ test("water and meal persist, invalid photo is rejected", async ({ page }) => {
   await expect(page.getByTestId("water-value")).toHaveText("250");
   await page.goto("/nutrition");
   await page.getByRole("button", { name: "拍照记录", exact: true }).click();
-  await page.locator("input[type=file]").setInputFiles({
-    name: "bad.txt",
-    mimeType: "text/plain",
-    buffer: Buffer.from("no"),
-  });
-  await expect(page.getByRole("dialog").getByRole("alert")).toContainText(
-    "图片",
-  );
-  await page.locator("input[type=file]").setInputFiles({
-    name: "meal.png",
-    mimeType: "image/png",
-    buffer: Buffer.from(
-      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=",
-      "base64",
-    ),
-  });
-  await page.getByRole("button", { name: "演示识别" }).click();
-  await page.getByLabel("食物名称").fill("我的午餐");
-  await page.getByRole("button", { name: "确认记录" }).click();
+  await page.locator("input[type=file]").first().setInputFiles({name:"bad.txt",mimeType:"text/plain",buffer:Buffer.from("no")});
+  await expect(page.getByRole("dialog").getByRole("alert")).toContainText("图片");
+  await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "手动记餐",exact:true }).click();
+  await page.getByLabel("食物名称1",{exact:true}).fill("我的午餐");
+  await page.getByLabel("份量1",{exact:true}).fill("100");
+  await page.getByLabel("热量1",{exact:true}).fill("130");
+  await page.getByRole("button", { name: "确认记录",exact:true }).click();
   await expect(page.getByText("我的午餐", { exact: true })).toBeVisible();
   await page.reload();
   await expect(page.getByText("我的午餐", { exact: true })).toBeVisible();
@@ -136,7 +127,7 @@ test("corrupt image cannot be recognized", async ({ page }) => {
   await page.goto("/nutrition");
   await page.getByRole("button", { name: "拍照记录", exact: true }).click();
   await page
-    .locator("input[type=file]")
+    .locator("input[type=file]").first()
     .setInputFiles({
       name: "bad.png",
       mimeType: "image/png",
@@ -145,7 +136,7 @@ test("corrupt image cannot be recognized", async ({ page }) => {
   await expect(page.getByRole("dialog").getByRole("alert")).toContainText(
     "无法读取",
   );
-  await expect(page.getByRole("button", { name: "演示识别" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "上传与识别待接入" })).toBeDisabled();
 });
 
 test("blocked storage is visible without breaking the application", async ({

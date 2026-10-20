@@ -102,7 +102,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <div className="topbar-right">
               <span className="demo-tag">
                 <span />
-                {path === "/dashboard" ? "健康记录 · 已连接服务器" : "其他模块 · 演示功能"}
+                {path === "/dashboard" ? "健康记录 · 已连接服务器" : path === "/nutrition" ? "饮食记录 · 已连接服务器" : "其他模块 · 演示功能"}
               </span>
               <span className="today-label">
                 <Heart size={14} />

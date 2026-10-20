@@ -1,0 +1,188 @@
+> qingyang-health-backend@0.1.0 test
+> node --import tsx --test tests/*.test.ts
+
+TAP version 13
+# Subtest: register, bad-code persistence, identity reuse, refresh replay and logout
+ok 1 - register, bad-code persistence, identity reuse, refresh replay and logout
+  ---
+  duration_ms: 102.728166
+  type: 'test'
+  ...
+# Subtest: single challenge concurrent login only succeeds once
+ok 2 - single challenge concurrent login only succeeds once
+  ---
+  duration_ms: 10.675458
+  type: 'test'
+  ...
+# Subtest: failed SMTP challenge cannot log in
+ok 3 - failed SMTP challenge cannot log in
+  ---
+  duration_ms: 8.43375
+  type: 'test'
+  ...
+# Subtest: five failed attempts persist and block correct code; expiry blocks login
+ok 4 - five failed attempts persist and block correct code; expiry blocks login
+  ---
+  duration_ms: 30.379667
+  type: 'test'
+  ...
+# Subtest: email cooldown rejects repeated send and existing user is reused
+ok 5 - email cooldown rejects repeated send and existing user is reused
+  ---
+  duration_ms: 39.721333
+  type: 'test'
+  ...
+# Subtest: encrypted short retry reuses credentials only for identical request and key
+ok 6 - encrypted short retry reuses credentials only for identical request and key
+  ---
+  duration_ms: 43.053416
+  type: 'test'
+  ...
+# Subtest: normalizes ASCII email without merging aliases
+ok 7 - normalizes ASCII email without merging aliases
+  ---
+  duration_ms: 1.13225
+  type: 'test'
+  ...
+# Subtest: authenticated encryption and keyed challenge hash
+ok 8 - authenticated encryption and keyed challenge hash
+  ---
+  duration_ms: 1.632083
+  type: 'test'
+  ...
+# Subtest: notification routes reject external and encoded paths
+ok 9 - notification routes reject external and encoded paths
+  ---
+  duration_ms: 0.433959
+  type: 'test'
+  ...
+# Subtest: idempotency hashes stable object key ordering
+ok 10 - idempotency hashes stable object key ordering
+  ---
+  duration_ms: 5.524958
+  type: 'test'
+  ...
+# Subtest: M01 idempotency errors retain status/code; arbitrary exceptions are private
+ok 11 - M01 idempotency errors retain status/code; arbitrary exceptions are private
+  ---
+  duration_ms: 2.3185
+  type: 'test'
+  ...
+# Subtest: M02 real auth/CSRF, profile versions, water idempotency/isolation, weight and aggregates
+ok 12 - M02 real auth/CSRF, profile versions, water idempotency/isolation, weight and aggregates
+  ---
+  duration_ms: 592.144666
+  type: 'test'
+  ...
+# Subtest: HTTP cookies, CSRF, account update, signed upload and logout
+ok 13 - HTTP cookies, CSRF, account update, signed upload and logout
+  ---
+  duration_ms: 539.618042
+  type: 'test'
+  ...
+# Subtest: 高德MCP json：初始化、坐标转换、餐饮过滤和未知信息
+ok 14 - 高德MCP json：初始化、坐标转换、餐饮过滤和未知信息
+  ---
+  duration_ms: 14.611333
+  type: 'test'
+  ...
+# Subtest: 高德MCP sse：初始化、坐标转换、餐饮过滤和未知信息
+ok 15 - 高德MCP sse：初始化、坐标转换、餐饮过滤和未知信息
+  ---
+  duration_ms: 3.189834
+  type: 'test'
+  ...
+# Subtest: 高德上游错误不暴露Key或伪装为空列表
+ok 16 - 高德上游错误不暴露Key或伪装为空列表
+  ---
+  duration_ms: 1.343083
+  type: 'test'
+  ...
+# Subtest: 高德查询拒绝未知标签和不存在的翻页参数
+ok 17 - 高德查询拒绝未知标签和不存在的翻页参数
+  ---
+  duration_ms: 0.359
+  type: 'test'
+  ...
+# Subtest: online vision sends controlled image bytes, bearer auth and model; normalizes candidates
+ok 18 - online vision sends controlled image bytes, bearer auth and model; normalizes candidates
+  ---
+  duration_ms: 13.854167
+  type: 'test'
+  ...
+# Subtest: supplier failures are private and never retried; malformed/truncated output rejected
+ok 19 - supplier failures are private and never retried; malformed/truncated output rejected
+  ---
+  duration_ms: 3.824209
+  type: 'test'
+  ...
+# Subtest: online configuration rejects local/foreign endpoints and missing key disables vision
+ok 20 - online configuration rejects local/foreign endpoints and missing key disables vision
+  ---
+  duration_ms: 0.158584
+  type: 'test'
+  ...
+# Subtest: cancel before image read does not send a paid request
+ok 21 - cancel before image read does not send a paid request
+  ---
+  duration_ms: 0.195375
+  type: 'test'
+  ...
+# Request failed 22558efd-9336-463e-a8f3-90bd416f7489 INTERNAL_ERROR
+# Subtest: M03 real M01 HTTP/MySQL/Redis: ownership, transactions, snapshots, worker CAS and M02 aggregation
+ok 22 - M03 real M01 HTTP/MySQL/Redis: ownership, transactions, snapshots, worker CAS and M02 aggregation
+  ---
+  duration_ms: 822.017
+  type: 'test'
+  ...
+# Subtest: user role exists; idempotent replay and body conflict; notification ownership
+ok 23 - user role exists; idempotent replay and body conflict; notification ownership
+  ---
+  duration_ms: 167.901166
+  type: 'test'
+  ...
+# Subtest: private upload validates real bytes; safe copy, owner isolation and references
+ok 24 - private upload validates real bytes; safe copy, owner isolation and references
+  ---
+  duration_ms: 76.359458
+  type: 'test'
+  ...
+# Subtest: corrupt image with matching declared checksum is rejected by decoder
+ok 25 - corrupt image with matching declared checksum is rejected by decoder
+  ---
+  duration_ms: 43.513791
+  type: 'test'
+  ...
+# Subtest: delivery claims, provider acceptance and disabled subscription isolation
+ok 26 - delivery claims, provider acceptance and disabled subscription isolation
+  ---
+  duration_ms: 59.073292
+  type: 'test'
+  ...
+# Subtest: failed business rolls back; expired idempotency lease is recoverable
+ok 27 - failed business rolls back; expired idempotency lease is recoverable
+  ---
+  duration_ms: 16.201916
+  type: 'test'
+  ...
+# Subtest: outbox publishes stable job; replay is not republished as new event
+ok 28 - outbox publishes stable job; replay is not republished as new event
+  ---
+  duration_ms: 58.593
+  type: 'test'
+  ...
+# Subtest: separate worker consumes MySQL Outbox via Redis and creates safe WebP
+ok 29 - separate worker consumes MySQL Outbox via Redis and creates safe WebP
+  ---
+  duration_ms: 5179.490291
+  type: 'test'
+  ...
+1..29
+# tests 29
+# suites 0
+# pass 29
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 6161.499833

@@ -1,0 +1,2 @@
+SMTP accepted; waiting for authorized test mailbox
+{"smtpSend":true,"mailReceived":true,"sendStatus":200,"loginStatus":200,"meStatus":200,"logoutStatus":204,"afterLogoutStatus":401,"durationMs":7339}

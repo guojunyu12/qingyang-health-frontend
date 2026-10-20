@@ -1,0 +1,79 @@
+{
+  "date": "2026-10-21",
+  "timezone": "Asia/Shanghai",
+  "scope": [
+    "M01 implemented",
+    "M02 implemented",
+    "M03 integrated implementation"
+  ],
+  "frontendCommit": "1448c2f75b375dd69b4c290f767c9910f23a53e0",
+  "backendCommit": "808ce27642fb4096a3f61a5a85315f47437d1cd0",
+  "frontendUnit": {
+    "passed": 20,
+    "failed": 0
+  },
+  "backend": {
+    "passed": 29,
+    "failed": 0,
+    "skipped": 0,
+    "database": "qingyang_auth_test",
+    "realMySQL": true,
+    "realRedis": true
+  },
+  "browserDefault": {
+    "passed": 23,
+    "failed": 0,
+    "liveSkipped": 2,
+    "usesAPIFixtures": true
+  },
+  "browserLive": {
+    "passed": 2,
+    "failed": 0,
+    "realAPI": true,
+    "realMySQL": true,
+    "injectedMailer": true
+  },
+  "supplementalHTTP": {
+    "passed": 12,
+    "failed": 0,
+    "scenarios": [
+      "multiple weights choose latest",
+      "delete latest falls back to previous valid weight",
+      "delete final weight yields null",
+      "water cursor pagination has no duplicate",
+      "bad cursor rejected",
+      "profile update refreshes dashboard target",
+      "actual missing provider and points capabilities",
+      "catalog reads isolated seeded SQL data",
+      "food keyword query",
+      "real new-account favorites empty, no demo",
+      "unsupported real-provider favorite denied",
+      "V001-V004 migration hashes unchanged"
+    ]
+  },
+  "smtpLive": {
+    "smtpSend": true,
+    "mailReceived": true,
+    "sendStatus": 200,
+    "loginStatus": 200,
+    "meStatus": 200,
+    "logoutStatus": 204,
+    "afterLogoutStatus": 401,
+    "durationMs": 7339
+  },
+  "developmentEnvironment": {
+    "schema": "V004",
+    "businessTables": 44,
+    "migrationHistoryTables": 1,
+    "foodCatalogRows": 0,
+    "visionKeyConfigured": false,
+    "amapKeyConfigured": false,
+    "M05PointsPortRegistered": false
+  },
+  "boundaries": [
+    "Live vision/map supplier not tested: no configured keys",
+    "M05 real ledger not tested: port not delivered",
+    "Camera virtual video and location callbacks simulated",
+    "Existing demo page regressions are not acceptance of undeveloped modules"
+  ]
+}

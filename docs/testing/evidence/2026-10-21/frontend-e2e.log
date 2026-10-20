@@ -1,0 +1,38 @@
+> qingyang-health@0.1.0 test:e2e
+> playwright test --workers=1
+
+
+Running 25 tests using 1 worker
+
+(node:87679) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   1 tests/e2e/app.spec.ts:11:1 › shell fits phone and desktop and modal restores focus (867ms)
+  ✓   2 tests/e2e/app.spec.ts:32:1 › water and real-contract meal UI persist; invalid photo is rejected (1.1s)
+  ✓   3 tests/e2e/app.spec.ts:52:1 › training, companion, bookings and overview (1.9s)
+  ✓   4 tests/e2e/app.spec.ts:83:1 › every page fits narrow screen (795ms)
+  ✓   5 tests/e2e/app.spec.ts:104:1 › daily rewards, reminder and exchange survive reload (921ms)
+  ✓   6 tests/e2e/app.spec.ts:126:1 › corrupt image cannot be recognized (372ms)
+  ✓   7 tests/e2e/app.spec.ts:142:1 › blocked storage is visible without breaking the application (417ms)
+  ✓   8 tests/e2e/app.spec.ts:158:1 › an action after Shanghai midnight records the new day before timers refresh (442ms)
+  ✓   9 tests/e2e/app.spec.ts:170:1 › definite water rejection allows a new submission with a new key (488ms)
+  ✓  10 tests/e2e/app.spec.ts:186:1 › a lost response retries the same water command key (442ms)
+  ✓  11 tests/e2e/auth.spec.ts:2:1 › email login form, errors, account update and logout work on mobile and desktop (985ms)
+  -  12 tests/e2e/health-live.spec.ts:5:1 › live email session → profile → water/weight → reload → 30-day overview
+  -  13 tests/e2e/nutrition-live.spec.ts:5:1 › real email/M01/M02 session → nutrition empty SQL state, missing dependencies, catalog and responsive layout
+  ✓  14 tests/e2e/nutrition-location.spec.ts:38:1 › 实时设备坐标用于搜索，小幅抖动不重复查询；移动后刷新，手选城市停止定位 (527ms)
+  ✓  15 tests/e2e/nutrition-location.spec.ts:62:1 › 拒绝定位时明确说明权限问题，不偷偷查询城市中心 (344ms)
+  ✓  16 tests/e2e/nutrition-location.spec.ts:70:1 › 取消后迟到位置无效；页面隐藏停止设备监听 (501ms)
+  ✓  17 tests/e2e/nutrition-location.spec.ts:87:1 › 局域网HTTP解释定位限制并保留手动搜索，不链接开发服务器 (368ms)
+  ✓  18 tests/e2e/nutrition-location.spec.ts:95:1 › 高精度超时后尝试设备普通精度，标明精度并忽略旧回调 (400ms)
+  ✓  19 tests/e2e/nutrition.spec.ts:9:1 › missing dependencies show no demo meals and disable save entry (299ms)
+  ✓  20 tests/e2e/nutrition.spec.ts:16:1 › meal 4xx rejection rotates key, lost response preserves key (636ms)
+  ✓  21 tests/e2e/nutrition.spec.ts:31:1 › cancelled manual meal never sends create; both responsive widths fit (424ms)
+(node:87869) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  22 tests/e2e/nutrition-camera.spec.ts:30:1 › 电脑打开实时相机、拍摄JPEG预览，拍摄和关闭释放摄像头 (932ms)
+  ✓  23 tests/e2e/nutrition-camera.spec.ts:52:1 › 拒绝权限会明确提示，允许后可重试 (598ms)
+  ✓  24 tests/e2e/nutrition-camera.spec.ts:69:1 › 等待授权时取消，迟到的流立即释放且不再展示取景 (506ms)
+  ✓  25 tests/e2e/nutrition-camera.spec.ts:80:1 › 移动端保留原生后摄拍照入口，相册入口独立 (404ms)
+
+  2 skipped
+  23 passed (20.9s)

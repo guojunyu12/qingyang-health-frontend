@@ -1,0 +1,28 @@
+[
+  {
+    "path": "/api/v1/meta/contract",
+    "status": 200,
+    "contract": "QY-MYSQL-1.1.0",
+    "schema": "V004"
+  },
+  {
+    "path": "/api/v1/nutrition/capabilities",
+    "status": 401
+  },
+  {
+    "path": "/api/v1/foods",
+    "status": 401
+  },
+  {
+    "path": "/api/v1/me/dashboard",
+    "status": 401
+  },
+  {
+    "path": "/api/v1/me/health-profile",
+    "status": 401
+  },
+  {
+    "path": "frontend proxy /nutrition/capabilities",
+    "status": 401
+  }
+]

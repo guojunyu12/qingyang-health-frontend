@@ -1,0 +1,11 @@
+> qingyang-health@0.1.0 test
+> vitest run
+
+
+ RUN  v5.0.5 /Users/guo/Documents/ChatGPT/健康App
+
+
+ Test Files  4 passed (4)
+      Tests  20 passed (20)
+   Start at  01:16:10
+   Duration  174ms (tests 56%, import 19%, transform 17%, worker 7%)

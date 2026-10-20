@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { HealthProfilePanel } from "@/features/health/health-profile-panel";
 import { AccountSummary } from "@/components/account-summary";
 import {
   Check,
@@ -24,7 +25,6 @@ export function Profile() {
     null,
   );
   const [goalsOpen, setGoalsOpen] = useState(false);
-  const [goal, setGoal] = useState(String(state.goal));
   const [exchangeOpen, setExchangeOpen] = useState(false);
   const [notice, setNotice] = useState("");
   const points = balance(state);
@@ -79,7 +79,6 @@ export function Profile() {
         <button
           className="outline-button"
           onClick={() => {
-            setGoal(String(state.goal));
             setGoalsOpen(true);
           }}
         >
@@ -260,7 +259,7 @@ export function Profile() {
         </section>
       </div>
       <footer className="page-footer">
-        你走过的每一步，都算数。<span>个人记录与积分仅保存在当前浏览器</span>
+        你走过的每一步，都算数。<span>健康档案与饮水、体重记录保存在服务器；积分、预约仍为演示</span>
       </footer>
       <Dialog
         open={!!activity}
@@ -305,43 +304,7 @@ export function Profile() {
           </>
         )}
       </Dialog>
-      <Dialog
-        open={goalsOpen}
-        onClose={() => setGoalsOpen(false)}
-        title="我的健康档案"
-      >
-        <p className="muted">按自己的节奏，记录健康生活的方向。</p>
-        <div className="note-block">
-          昵称：小予（演示）
-          <br />
-          当前体重：{state.dailyRecords[today]?.weight ?? "暂无"} kg
-          <br />
-          每日饮水目标：2,000 ml · 热量目标：1,800 千卡（演示）
-        </div>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            dispatch({ type: "goal", value: Number(goal) });
-            setGoalsOpen(false);
-          }}
-        >
-          <label>
-            目标体重（kg）
-            <input
-              required
-              type="number"
-              min="20"
-              max="350"
-              step="0.1"
-              value={goal}
-              onChange={(e) => setGoal(e.target.value)}
-            />
-          </label>
-          <button className="primary-button" disabled={!ready}>
-            保存目标
-          </button>
-        </form>
-      </Dialog>
+      <HealthProfilePanel open={goalsOpen} onClose={() => setGoalsOpen(false)} onSaved={() => setNotice("健康档案已保存")} />
       <Dialog
         open={exchangeOpen}
         onClose={() => {

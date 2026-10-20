@@ -3,231 +3,252 @@ import { useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
-  Leaf,
   Droplets,
   Flame,
   Footprints,
+  Leaf,
   Scale,
-  Heart,
-  Check,
 } from "lucide-react";
-import { useHealth } from "@/components/health-provider";
-import { TrendChart } from "@/components/health-charts";
-import { balance } from "@/lib/health/reducer";
+import {
+  IntegrationStatus,
+  HealthErrorNotice,
+  LocalIntegrationNotice,
+  MissingWeightChart,
+  WaterHistoryChart,
+} from "@/features/health/components";
+import { todayShanghai, useHealthResource } from "@/features/health/hooks";
+import { healthApi } from "@/features/health/runtime";
+import styles from "@/features/health/health.module.css";
+const moodNames = { happy: "开心", calm: "平静", tired: "疲惫", low: "低落" };
 export function Overview() {
-  const { state, today } = useHealth();
-  const [range, setRange] = useState(7);
-  const dates = Array.from({ length: range }, (_, i) => {
-    const d = new Date(today + "T12:00:00+08:00");
-    d.setUTCDate(d.getUTCDate() - range + 1 + i);
-    return d.toISOString().slice(0, 10);
-  });
-  const meals = state.meals.filter((m) => dates.includes(m.date));
-  const water = dates.reduce(
-    (n, d) => n + (state.dailyRecords[d]?.water ?? 0),
-    0,
+  const today = todayShanghai(),
+    [range, setRange] = useState<7 | 30>(7),
+    [endDate, setEndDate] = useState(today);
+  const resource = useHealthResource(`overview:${range}:${endDate}`, (s) =>
+    healthApi.overview(range, endDate, s),
   );
-  const active = dates.filter((d) => state.dailyRecords[d]).length;
-  const workout = state.completedWorkouts.filter((w) => dates.includes(w.date));
-  const weightDates = dates.filter(
-    (d) => state.dailyRecords[d]?.weight !== undefined,
-  );
-  const weights = weightDates.map((d) => state.dailyRecords[d].weight!);
-  const intake = meals.reduce((n, x) => n + x.calories, 0);
-  const avg = Math.round(
-    intake / Math.max(new Set(meals.map((m) => m.date)).size, 1),
-  );
-  const labelDates = weightDates.length
+  const data = resource.data;
+  const metrics = data
     ? [
-        weightDates[0].slice(5),
-        weightDates[Math.floor(weightDates.length / 2)].slice(5),
-        weightDates[weightDates.length - 1].slice(5),
+        {
+          name: "日均记录摄入",
+          value: data.summary.avgIntakeKcal,
+          unit: "千卡",
+          icon: Flame,
+          cls: "peach",
+        },
+        {
+          name: "日均饮水",
+          value: data.summary.avgWaterMl,
+          unit: "ml",
+          icon: Droplets,
+          cls: "blue",
+        },
+        {
+          name: "完成训练",
+          value: data.summary.completedWorkouts,
+          unit: "次",
+          icon: Footprints,
+          cls: "lilac",
+        },
+        {
+          name: "最新有效体重",
+          value: data.summary.latestWeightKg,
+          unit: "kg",
+          icon: Scale,
+          cls: "mint",
+        },
       ]
     : [];
   return (
-    <>
+    <div className={styles.stack}>
+      <LocalIntegrationNotice />
+      {data && <IntegrationStatus availability={data.availability} />}
       <header className="overview-header">
         <div>
           <p className="greeting">
             <Leaf size={15} />
-            轻养 · 健康数据空间
+            轻养 · 我的健康数据空间
           </p>
           <h1>看见坚持，留下的变化。</h1>
-          <p>{today} · 演示数据与本地记录汇总</p>
+          <p>
+            {data ? `${data.startDate} — ${data.endDate}` : "正在读取个人记录"}{" "}
+            · 上海业务日期
+          </p>
         </div>
         <div className="filter-row">
           <div className="range-select">
-            {[7, 30].map((n) => (
+            {([7, 30] as const).map((n) => (
               <button
                 key={n}
-                aria-pressed={range === n}
                 className={range === n ? "active" : ""}
+                aria-pressed={range === n}
                 onClick={() => setRange(n)}
               >
                 近 {n} 天
               </button>
             ))}
           </div>
+          <label>
+            截止日期{" "}
+            <input
+              type="date"
+              aria-label="截止日期"
+              value={endDate}
+              max={today}
+              onChange={(e) => {
+                if (e.target.value) setEndDate(e.target.value);
+              }}
+            />
+          </label>
           <Link className="outline-button" href="/dashboard">
             <ArrowLeft size={14} />
-            返回应用
+            返回今日
           </Link>
         </div>
       </header>
-      <div className="overview-stat-grid">
-        {[
-          {
-            name: "日均记录摄入",
-            value: avg.toLocaleString(),
-            unit: "千卡",
-            icon: Flame,
-            cls: "peach",
-          },
-          {
-            name: "日均饮水",
-            value: Math.round(water / Math.max(active, 1)).toLocaleString(),
-            unit: "ml",
-            icon: Droplets,
-            cls: "blue",
-          },
-          {
-            name: "完成训练",
-            value: workout.length,
-            unit: "次",
-            icon: Footprints,
-            cls: "lilac",
-          },
-          {
-            name: "最新体重",
-            value: weights.length ? weights[weights.length - 1] : "—",
-            unit: "kg",
-            icon: Scale,
-            cls: "mint",
-          },
-        ].map((x) => (
-          <section className="card" key={x.name}>
-            <div className="section-head">
-              <h3>{x.name}</h3>
-              <span className={"stat-icon " + x.cls}>
-                <x.icon size={19} />
-              </span>
-            </div>
-            <strong>
-              {x.value} <small>{x.unit}</small>
-            </strong>
-            <small>{range} 天范围 · 按已有记录计算</small>
-          </section>
-        ))}
-      </div>
-      <div className="overview-charts">
-        <section className="card">
-          <div className="section-head">
-            <h2>体重变化趋势</h2>
-            <span className="tag mint">目标 {state.goal} kg</span>
-          </div>
-          {weights.length ? (
-            <TrendChart values={weights} labels={labelDates} />
-          ) : (
-            <div className="empty">该范围暂无体重记录</div>
-          )}
-          <p className="subsection-note">
-            仅显示已记录的日期，变化不是评价自己的唯一标准。
-          </p>
-        </section>
-        <section className="card">
-          <div className="section-head">
-            <h2>饮水记录</h2>
-            <small className="muted">最近 7 天 · ml</small>
-          </div>
-          <div className="vertical-bars">
-            {dates.slice(-7).map((d) => (
-              <div key={d}>
-                <span
-                  title={String(state.dailyRecords[d]?.water ?? 0) + " ml"}
-                  style={{
-                    height:
-                      Math.min(
-                        ((state.dailyRecords[d]?.water ?? 0) / 2500) * 100,
-                        100,
-                      ) + "%",
-                  }}
-                />
-                {d.slice(5).replace("-", "/")}
-              </div>
+      <HealthErrorNotice error={resource.error} retry={resource.reload} />
+      {resource.loading && <p role="status">正在汇总你的健康记录…</p>}
+      {data && (
+        <>
+          <div className="overview-stat-grid">
+            {metrics.map((x) => (
+              <section className="card" key={x.name}>
+                <div className="section-head">
+                  <h3>{x.name}</h3>
+                  <span className={`stat-icon ${x.cls}`}>
+                    <x.icon size={19} />
+                  </span>
+                </div>
+                <strong>
+                  {x.value ?? "—"} <small>{x.unit}</small>
+                </strong>
+                <small>
+                  {x.name === "最新有效体重"
+                    ? "截至所选日期的最新有效测量"
+                    : x.name === "完成训练"
+                      ? "统计所选范围内的已完成训练"
+                      : "平均值仅按该类有记录天数计算"}
+                </small>
+              </section>
             ))}
           </div>
-        </section>
-      </div>
-      <div className="overview-lower">
-        <section className="card">
-          <div className="section-head">
-            <h2>每一份运动都算数</h2>
-            <Footprints size={18} />
+          <div className={styles.grid}>
+            <section className="card">
+              <div className="section-head">
+                <h2>体重变化趋势</h2>
+                <span className="tag mint">
+                  {data.coverage.weightDays} 天有测量
+                </span>
+              </div>
+              <MissingWeightChart points={data.series} />
+              <p className="muted tiny">
+                保留全部 {range} 个日期，缺测日期不连接。
+              </p>
+            </section>
+            <section className="card">
+              <div className="section-head">
+                <h2>饮水记录</h2>
+                <small className="muted">
+                  {data.coverage.waterDays} / {range} 天有记录
+                </small>
+              </div>
+              <WaterHistoryChart points={data.series} />
+              <p className="muted tiny">
+                没有记录的日期保留为空，不参与饮水均值计算。
+              </p>
+            </section>
           </div>
-          <div className="metric-number">
-            <strong>{workout.reduce((n, x) => n + x.calories, 0)}</strong>
-            <span>千卡消耗</span>
+          <div className="overview-lower">
+            <section className="card">
+              <h2>每一份运动都算数</h2>
+              <div className="metric-number">
+                <strong>{data.summary.totalExerciseKcal ?? "—"}</strong>
+                <span>千卡估算消耗</span>
+              </div>
+              <p className="muted tiny">
+                已完成 {data.summary.completedWorkouts ?? "—"} 次训练
+              </p>
+              <Link className="text-link" href="/training">
+                查看训练计划
+              </Link>
+            </section>
+            <section className="card">
+              <h2>心情也值得看见</h2>
+              <div className="metric-number">
+                <strong>{data.summary.moodRecordedDays ?? "—"}</strong>
+                <span>天心情记录</span>
+              </div>
+              <div className={styles.mood}>
+                {data.series
+                  .filter((x) => x.mood !== null)
+                  .map((x) => (
+                    <span key={x.date}>
+                      {x.date.slice(5)} · {moodNames[x.mood!]}
+                    </span>
+                  ))}
+              </div>
+              {!data.summary.moodRecordedDays && (
+                <p className="muted tiny">{data.availability?.companion ? "还没有心情记录，愿意和小养说说吗？" : "心情模块尚未接入"}</p>
+              )}
+            </section>
+            <section className="card">
+              <h2>每份坚持，都有回响</h2>
+              <div className="metric-number">
+                <strong>{data.summary.pointsBalance ?? "—"}</strong>
+                <span>可用积分</span>
+              </div>
+              <p className="muted tiny">
+                当前有效预约 {data.summary.activeBookings ?? "—"} 个
+              </p>
+              <Link className="text-link" href="/profile">
+                查看成长足迹
+              </Link>
+            </section>
           </div>
-          <p className="muted tiny" style={{ marginTop: 15 }}>
-            {workout.length
-              ? "你已完成 " + workout.length + " 次训练。"
-              : "还没有训练记录，今天开始动一小会儿吧。"}
-          </p>
-          <Link
-            href="/training"
-            className="text-link"
-            style={{ marginTop: 15 }}
-          >
-            查看运动计划
-          </Link>
-        </section>
-        <section className="card">
-          <div className="section-head">
-            <h2>心情也值得看见</h2>
-            <Heart size={18} />
-          </div>
-          <div className="metric-number">
-            <strong>
-              {state.moods.filter((m) => dates.includes(m.date)).length}
-            </strong>
-            <span>天心情记录</span>
-          </div>
-          <p className="muted tiny" style={{ marginTop: 15 }}>
-            {state.moods.find((m) => m.date === today)
-              ? "今天的心情：" +
-                state.moods.find((m) => m.date === today)!.value
-              : "今天的心情，愿意和小养说说吗？"}
-          </p>
-          <Link
-            href="/companion"
-            className="text-link"
-            style={{ marginTop: 15 }}
-          >
-            去记录此刻心情
-          </Link>
-        </section>
-        <section className="card">
-          <div className="section-head">
-            <h2>努力，都有回响</h2>
-            <Check size={18} />
-          </div>
-          <div className="metric-number">
-            <strong>{balance(state)}</strong>
-            <span>累计可用积分</span>
-          </div>
-          <p className="muted tiny" style={{ marginTop: 15 }}>
-            已预约 {state.bookings.length} 个演示活动
-            <br />
-            健康的日子，也可以热热闹闹。
-          </p>
-          <Link href="/profile" className="text-link" style={{ marginTop: 15 }}>
-            查看成长足迹
-          </Link>
-        </section>
-      </div>
+          <section className="card">
+            <div className="section-head">
+              <h2>每一天，都有自己的节奏</h2>
+              <small className="muted">缺测显示 —</small>
+            </div>
+            <div className={styles.scroll}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>日期</th>
+                    <th>食物摄入 / 千卡</th>
+                    <th>饮水 / ml</th>
+                    <th>体重 / kg</th>
+                    <th>训练 / 次</th>
+                    <th>心情</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.series.map((p) => (
+                    <tr key={p.date}>
+                      <td>{p.date}</td>
+                      <td>{p.hasMealRecord ? p.intakeKcal : "—"}</td>
+                      <td>{p.hasWaterRecord ? p.waterMl : "—"}</td>
+                      <td>{p.weightKg ?? "—"}</td>
+                      <td>{p.completedWorkouts ?? "—"}</td>
+                      <td>{p.mood ? moodNames[p.mood] : "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="muted tiny">
+              记录覆盖：饮食 {data.coverage.mealDays ?? "—"} 天 · 饮水{" "}
+              {data.coverage.waterDays} 天 · 体重 {data.coverage.weightDays} 天
+              · 心情 {data.coverage.moodDays ?? "—"} 天
+            </p>
+          </section>
+        </>
+      )}
       <footer className="page-footer">
-        轻养，让健康自然发生。<span>数据用于产品体验，非医疗测量或诊断</span>
+        轻养，让健康自然发生。
+        <span>个人记录与运动估算，不用于医疗测量或诊断</span>
       </footer>
-    </>
+    </div>
   );
 }

@@ -10,6 +10,7 @@ export class ApiError extends Error {
   }
 }
 type Options = {
+  signal?: AbortSignal;
   method?: string;
   body?: unknown;
   csrf?: boolean;
@@ -103,6 +104,7 @@ export async function api<T>(
     headers["X-CSRF-Token"] = await csrfToken();
   const res = await fetch("/api/v1" + path, {
     method,
+    signal: options.signal,
     credentials: "include",
     cache: "no-store",
     headers,

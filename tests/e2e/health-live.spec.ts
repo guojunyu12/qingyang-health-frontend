@@ -1,0 +1,45 @@
+import {test,expect} from '@playwright/test';
+import {readFile,mkdir} from 'node:fs/promises';
+import {resolve} from 'node:path';
+test.skip(process.env.QY_LIVE_E2E!=='1','Requires explicit isolated live API harness');
+test('live email session → profile → water/weight → reload → 30-day overview',async({page})=>{
+ const errors:string[]=[];page.on('pageerror',error=>errors.push(error.message));
+ await page.goto('/login');
+ await page.getByLabel('邮箱地址').fill(`m02-browser-${crypto.randomUUID()}@example.com`);
+ await page.getByRole('button',{name:'获取验证码'}).click();
+ await expect(page.getByRole('status')).toContainText('验证码已发送');
+ const code=await readFile(resolve('server/.local/m02-e2e-code'),'utf8');
+ await page.getByLabel('验证码',{exact:true}).fill(code);
+ await page.getByRole('button',{name:'登录 / 注册'}).click();
+ await expect(page).toHaveURL(/\/dashboard$/);
+ await page.getByRole('button',{name:'设置个人目标'}).click();
+ await page.getByLabel('目标体重（kg）',{exact:true}).fill('60');
+ await page.getByLabel('饮水目标（ml）',{exact:true}).fill('2000');
+ await page.getByLabel('基础热量目标（千卡）',{exact:true}).fill('1800');
+ await page.getByLabel('健康目标',{exact:true}).selectOption('balanced');
+ await page.getByRole('button',{name:'保存个人目标'}).click();
+ await expect(page.getByRole('dialog')).toHaveCount(0);
+ await page.getByRole('button',{name:/喝一杯水/}).click();
+ await expect(page.getByTestId('water-value')).toHaveText('250');
+ await page.getByRole('button',{name:/喝一杯水/}).click();
+ await expect(page.getByTestId('water-value')).toHaveText('500');
+ await page.reload();await expect(page.getByTestId('water-value')).toHaveText('500');
+ await page.getByRole('button',{name:'记录体重',exact:true}).click();
+ await page.getByLabel('体重（kg）',{exact:true}).fill('68.2');
+ await page.getByRole('button',{name:'保存记录',exact:true}).click();
+ await expect(page.getByRole('dialog')).toHaveCount(0);
+ await expect(page.getByText('68.2',{exact:true}).first()).toBeVisible();
+ await mkdir(resolve('.handoff/m02-review/screenshots'),{recursive:true});
+ for(const width of [360,1440]){
+  await page.setViewportSize({width,height:950});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBe(true);
+  await page.screenshot({path:resolve(`.handoff/m02-review/screenshots/dashboard-${width}.png`),fullPage:true});
+ }
+ await page.goto('/overview');await page.getByRole('button',{name:'近 30 天'}).click();
+ await expect(page.locator('tbody tr')).toHaveCount(30);
+ await expect(page.getByRole('heading',{name:'体重变化趋势'})).toBeVisible();
+ await page.goto('/profile');await page.getByRole('button',{name:'健康档案',exact:true}).click();
+ await expect(page.getByLabel('目标体重（kg）',{exact:true})).toHaveValue('60');
+ await page.keyboard.press('Escape');
+ expect(errors).toEqual([]);
+});

@@ -1,5 +1,7 @@
+import { installHealthFixture } from "../support/health-fixture";
 import { test, expect } from "@playwright/test";
 test.beforeEach(async({page})=>{
+ await installHealthFixture(page);
  await page.addInitScript(()=>{try{localStorage.setItem('qingyang-account-id','e2e-demo');}catch{}});
  await page.route('**/api/v1/me',route=>route.fulfill({json:{data:{id:'e2e-demo',nickname:'测试用户',email:'t***@example.com',joinedAt:'2026-10-19T00:00:00Z',timezone:'Asia/Shanghai'}}}));
 });
@@ -28,9 +30,9 @@ test("shell fits phone and desktop and modal restores focus", async ({
 test("water and meal persist, invalid photo is rejected", async ({ page }) => {
   await page.goto("/dashboard");
   await page.getByRole("button", { name: "喝一杯水" }).click();
-  await expect(page.getByTestId("water-value")).toHaveText("1,500");
+  await expect(page.getByTestId("water-value")).toHaveText("250");
   await page.reload();
-  await expect(page.getByTestId("water-value")).toHaveText("1,500");
+  await expect(page.getByTestId("water-value")).toHaveText("250");
   await page.goto("/nutrition");
   await page.getByRole("button", { name: "拍照记录", exact: true }).click();
   await page.locator("input[type=file]").setInputFiles({
@@ -159,7 +161,7 @@ test("blocked storage is visible without breaking the application", async ({
     page.getByRole("alert").filter({ hasText: "无法保存" }),
   ).toBeVisible();
   await page.getByRole("button", { name: "喝一杯水" }).click();
-  await expect(page.getByTestId("water-value")).toHaveText("1,500");
+  await expect(page.getByTestId("water-value")).toHaveText("250");
 });
 
 test("an action after Shanghai midnight records the new day before timers refresh", async ({
@@ -170,13 +172,36 @@ test("an action after Shanghai midnight records the new day before timers refres
   await expect(page.getByRole("button", { name: "喝一杯水" })).toBeEnabled();
   await page.clock.setSystemTime(new Date("2026-10-18T16:00:01Z"));
   await page.getByRole("button", { name: "喝一杯水" }).click();
-  await expect
-    .poll(() =>
-      page.evaluate(
-        () =>
-          JSON.parse(localStorage.getItem("qingyang-health-v1:e2e-demo")!).state
-            .dailyRecords["2026-10-19"]?.water,
-      ),
-    )
-    .toBe(250);
+  await expect(page.getByTestId("water-value")).toHaveText("250");
+  await expect(page.getByLabel("查看记录日期")).toHaveValue("2026-10-19");
+});
+
+test('definite water rejection allows a new submission with a new key',async({page})=>{
+ const keys:string[]=[];
+ await page.route('**/api/v1/me/water-records',async route=>{
+  if(route.request().method()!=='POST'){await route.fallback();return;}
+  keys.push(route.request().headers()['idempotency-key']);
+  if(keys.length===1) await route.fulfill({status:409,json:{error:{code:'WATER_DAILY_LIMIT',message:'饮水额度已满'}}});
+  else await route.fallback();
+ });
+ await page.goto('/dashboard');
+ await page.getByRole('button',{name:/喝一杯水/}).click();
+ await expect(page.getByRole('alert').filter({hasText:'饮水额度已满'})).toBeVisible();
+ await page.getByRole('button',{name:/喝一杯水/}).click();
+ await expect(page.getByTestId('water-value')).toHaveText('250');
+ expect(keys).toHaveLength(2);expect(keys[1]).not.toBe(keys[0]);
+});
+
+test('a lost response retries the same water command key',async({page})=>{
+ const keys:string[]=[];
+ await page.route('**/api/v1/me/water-records',async route=>{
+  if(route.request().method()!=='POST'){await route.fallback();return;}
+  keys.push(route.request().headers()['idempotency-key']);
+  if(keys.length===1) await route.abort('failed'); else await route.fallback();
+ });
+ await page.goto('/dashboard');await page.getByRole('button',{name:/喝一杯水/}).click();
+ await expect(page.getByRole('alert').filter({hasText:/fetch|network|请求|网络/i})).toBeVisible();
+ await page.getByRole('button',{name:/喝一杯水/}).click();
+ await expect(page.getByTestId('water-value')).toHaveText('250');
+ expect(keys).toHaveLength(2);expect(keys[1]).toBe(keys[0]);
 });

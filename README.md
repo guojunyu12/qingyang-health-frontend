@@ -22,6 +22,19 @@ npm run test:e2e
 
 浏览器测试默认使用本机 Google Chrome；如未安装，可在 playwright.config.ts 移除 channel 并运行 `npx playwright install chromium`。
 
+## M05 真实业务入口
+
+本分支保留原来的健康看板、饮食、训练和陪伴演示，并在 `/m05/profile` 接入独立的 M05 H5 功能。原 `/profile` 中也提供入口。M05 页面包括真实 MySQL 支撑的积分任务与流水、活动发现和预约、数字权益兑换、基础社区及站内消息。M05 数据来自后端 API，不与原有浏览器 `localStorage` 演示账本混用。
+
+启动时需要单独运行 `qingyang-health-backend` 的 H5 API（默认 3100）、管理 API（默认 3101）及 `qingyang-health-admin`（默认 3002），并让它们连接同一个 M05 MySQL 开发库。将 `.env.m05.example` 复制为 `.env.local`，填入自己的开发令牌；它只由 Next 同源代理在服务器端读取。前端仍运行在 3001：
+
+```sh
+pnpm install
+pnpm run dev
+```
+
+M05 独立身份仅供本地联调。正式系统需由 M01 统一登录、权限与会话；短信不在 M05 范围内，消息仅保证写入站内收件箱。原页面的演示提示仍仅适用于原有模块，不代表 M05 为模拟数据。
+
 ## 入口
 
 | 路径 | 页面 |

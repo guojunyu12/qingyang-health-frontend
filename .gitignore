@@ -10,6 +10,7 @@ test-results/
 /.handoff/
 .vercel
 .env*
+!.env.m05.example
 
 # Local database data and private runtime configuration
 .local/

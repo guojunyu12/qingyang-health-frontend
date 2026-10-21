@@ -94,6 +94,11 @@ export function Profile() {
           <ChevronRight size={14} />
         </button>
       </section>
+      <section className="card">
+        <div className="section-head"><h2>M05 积分与活动</h2></div>
+        <p className="muted">在独立的真实服务中检查签到积分、活动预约、数字权益和站内消息。</p>
+        <Link className="primary-button" href="/m05/profile">进入 M05 功能</Link>
+      </section>
       <div className="profile-columns">
         <section className="card points-card">
           <div className="section-head">

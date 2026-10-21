@@ -31,6 +31,7 @@ const nav = [
 export function AppShell({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   const { ready, storageWarning } = useHealth();
+  if (path.startsWith('/m05')) return <>{children}</>;
   const overview = path === "/overview";
   return (
     <div className={overview ? "app full-screen" : "app"}>

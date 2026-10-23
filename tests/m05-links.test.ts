@@ -39,4 +39,19 @@ it("restores only known M05 routes after email login", () => {
   ).toBe("/m05/activities/123e4567-e89b-42d3-a456-426614174000");
   expect(safeReturnTo("/m05/unknown")).toBe("/dashboard");
   expect(safeReturnTo("//example.com/m05/points")).toBe("/dashboard");
+  const id = "123e4567-e89b-42d3-a456-426614174000";
+  expect(safeReturnTo(`/m05/community/users/${id}`)).toBe(
+    `/m05/community/users/${id}`,
+  );
+  for (const path of [
+    `/m05/points/${id}`,
+    `/m05/community/${id}`,
+    `/m05/community/users/${id}/extra`,
+    "/m05/community/users/../../profile",
+    "/m05/points?returnTo=https://example.com",
+    "https://example.com/m05/points",
+    "javascript:alert(1)",
+  ]) {
+    expect(safeReturnTo(path)).toBe("/dashboard");
+  }
 });

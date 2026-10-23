@@ -20,7 +20,7 @@ let refreshing: Promise<void> | null = null;
 export function safeReturnTo(value: string | null) {
   if (
     typeof value === "string" &&
-    /^\/m05\/(points|rewards|redemptions|activities|bookings|community|blocks)(\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})?$/.test(
+    /^\/m05\/(?:(?:points|rewards|redemptions|activities|bookings|community|blocks)|(?:activities|bookings|redemptions|community\/users)\/[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})$/.test(
       value,
     )
   )

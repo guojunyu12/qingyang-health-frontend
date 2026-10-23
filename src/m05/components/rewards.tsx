@@ -96,6 +96,7 @@ export function H5Rewards({
   return path.split("/")[1] === "redemptions" ? (
     user ? (
       <Orders
+        key={path.split("/")[2] || "list"}
         user={user}
         id={path.split("/")[2]}
         refreshVersion={refreshVersion}
@@ -338,6 +339,12 @@ function Orders({
         </section>
       )}
       <Feedback error={detail.error || action.error} notice={action.notice} />
+      {id && detail.loading && <p role="status">正在读取兑换详情…</p>}
+      {id && detail.error && (
+        <button className="button secondary" onClick={detail.reload}>
+          重新加载兑换详情
+        </button>
+      )}
       {rows.map((r) => (
         <section className="card redemption-card" key={r.id}>
           <div className="section-title">

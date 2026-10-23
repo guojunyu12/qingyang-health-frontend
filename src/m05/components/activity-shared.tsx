@@ -104,12 +104,16 @@ export const params = (data: Record<string, string>) =>
 export function useRead<T>(path: string | null, revision = 0) {
   const [data, setData] = useState<T | null>(null),
     [error, setError] = useState(""),
-    [loading, setLoading] = useState(false);
+    [errorStatus, setErrorStatus] = useState<number | null>(null),
+    [loading, setLoading] = useState(Boolean(path)),
+    [retry, setRetry] = useState(0);
   useEffect(() => {
     let live = true;
     setError("");
+    setErrorStatus(null);
+    setData(null);
     if (!path) {
-      setData(null);
+      setLoading(false);
       return;
     }
     setLoading(true);
@@ -120,6 +124,7 @@ export function useRead<T>(path: string | null, revision = 0) {
       .catch((e) => {
         if (live) {
           setError(e.message);
+          setErrorStatus(e instanceof ApiError ? e.status : null);
           setData(null);
         }
       })
@@ -129,8 +134,14 @@ export function useRead<T>(path: string | null, revision = 0) {
     return () => {
       live = false;
     };
-  }, [path, revision]);
-  return { data, error, loading };
+  }, [path, revision, retry]);
+  return {
+    data,
+    error,
+    errorStatus,
+    loading,
+    reload: () => setRetry((n) => n + 1),
+  };
 }
 export function usePages<T>(path: string, revision = 0) {
   const [data, setData] = useState<{ items: T[]; nextCursor: string | null }>({
@@ -169,7 +180,13 @@ export function usePages<T>(path: string, revision = 0) {
       seq.current++;
     };
   }, [path, revision]);
-  return { ...data, error, loading, more: () => load(data.nextCursor!) };
+  return {
+    ...data,
+    error,
+    loading,
+    more: () => load(data.nextCursor!),
+    reload: () => load(),
+  };
 }
 export function useAction(user: User | null) {
   const [busy, setBusy] = useState(false),
@@ -178,7 +195,14 @@ export function useAction(user: User | null) {
     [errorCode, setErrorCode] = useState(""),
     [revision, setRevision] = useState(0),
     pending = useRef<{ signature: string; key: string } | null>(null),
-    running = useRef(false);
+    running = useRef(false),
+    generation = useRef(0);
+  useEffect(() => {
+    generation.current++;
+    return () => {
+      generation.current++;
+    };
+  }, [user?.id]);
   async function run<T>(
     path: string,
     method: string,
@@ -191,6 +215,7 @@ export function useAction(user: User | null) {
       setError("请先登录账号");
       return;
     }
+    const current = generation.current;
     running.current = true;
     setBusy(true);
     setError("");
@@ -208,12 +233,14 @@ export function useAction(user: User | null) {
           "Idempotency-Key": pending.current.key,
         },
       });
+      if (current !== generation.current) return;
       pending.current = null;
       setNotice(message);
       setRevision((v) => v + 1);
       onSuccess?.(r);
       return r;
     } catch (e) {
+      if (current !== generation.current) return;
       if (
         e instanceof ApiError &&
         e.status < 500 &&
@@ -223,7 +250,7 @@ export function useAction(user: User | null) {
       setError((e as Error).message);
       setErrorCode(e instanceof ApiError ? e.code : "NETWORK_ERROR");
     } finally {
-      setBusy(false);
+      if (current === generation.current) setBusy(false);
       running.current = false;
     }
   }
@@ -260,12 +287,23 @@ export function More({
     loading: boolean;
     error: string;
     items: unknown[];
+    reload: () => void;
   };
 }) {
   return (
     <>
       <Feedback error={page.error} />
-      {!page.items.length && (
+      {page.error && (
+        <button
+          type="button"
+          className="button secondary"
+          disabled={page.loading}
+          onClick={() => void page.reload()}
+        >
+          重新加载列表
+        </button>
+      )}
+      {!page.items.length && !page.error && (
         <p className="ledger-empty">
           {page.loading ? "正在读取…" : "暂无符合条件的记录"}
         </p>

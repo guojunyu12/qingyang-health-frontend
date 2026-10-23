@@ -8,11 +8,20 @@ async function prepare(page: Page, mode: "success" | "denied" | "pending" | "fal
     let success: PositionCallback;
     let failure: PositionErrorCallback;
     let next = 1;
+    const pendingPermissions: ((value: { state: PermissionState }) => void)[] = [];
     const fixture = (window as any).__locationFixture = {
       cleared: [] as number[], options: null as PositionOptions | null, callbacks: [] as PositionCallback[],
       emit: (latitude: number, longitude: number, accuracy = 15) => success({ coords: { latitude, longitude, accuracy }, timestamp: Date.now() } as GeolocationPosition),
       fail: (code: number) => failure({ code } as GeolocationPositionError),
+      resolvePermissions: () => {
+        for (const resolve of pendingPermissions) resolve({ state: "prompt" });
+      },
     };
+    if (mode === "fallback") {
+      Object.defineProperty(navigator, "permissions", { value: {
+        query: () => new Promise((resolve) => pendingPermissions.push(resolve)),
+      } });
+    }
     Object.defineProperty(navigator, "geolocation", { value: {
       watchPosition(ok: PositionCallback, error: PositionErrorCallback, options: PositionOptions) {
         success = ok; failure = error; fixture.options = options;
@@ -96,6 +105,8 @@ test("高精度超时后尝试设备普通精度，标明精度并忽略旧回�
   await prepare(page, "fallback");
   await page.getByRole("button", { name: "使用实时定位", exact: true }).click();
   await expect(page.locator("#nearby")).toContainText("精度约250米");
+  await expect(page.locator("#nearby")).toContainText("网站定位授权：已允许");
+  await page.evaluate(() => (window as any).__locationFixture.resolvePermissions());
   await expect(page.locator("#nearby")).toContainText("网站定位授权：已允许");
   expect(await page.evaluate(() => (window as any).__locationFixture.options.enableHighAccuracy)).toBe(false);
   await page.evaluate(() => (window as any).__locationFixture.callbacks[0]({ coords: { latitude: 30, longitude: 120, accuracy: 1 }, timestamp: Date.now() }));

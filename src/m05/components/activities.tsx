@@ -40,7 +40,12 @@ export function H5Activities({
     ) : null;
   if (parts[0] === "bookings")
     return user ? (
-      <MyBookings user={user} id={parts[1]} refreshVersion={refreshVersion} />
+      <MyBookings
+        key={parts[1] || "list"}
+        user={user}
+        id={parts[1]}
+        refreshVersion={refreshVersion}
+      />
     ) : null;
   return parts[1] ? (
     <ActivityDetail
@@ -179,10 +184,8 @@ function ActivityDetail({
   const action = useAction(user),
     router = useRouter(),
     revision = refreshVersion + action.revision,
-    { data: a, error } = useRead<Activity>(
-      "/api/v1/activities/" + id,
-      revision,
-    );
+    detail = useRead<Activity>("/api/v1/activities/" + id, revision);
+  const a = detail.data;
   const [start, setStart] = useState(day()),
     [end, setEnd] = useState(day(30)),
     [range, setRange] = useState({ startDate: day(), endDate: day(30) }),
@@ -199,7 +202,13 @@ function ActivityDetail({
       <Link href="/activities" className="text-link">
         ← 返回活动列表
       </Link>
-      <Feedback error={error || action.error} notice={action.notice} />
+      <Feedback error={detail.error || action.error} notice={action.notice} />
+      {detail.loading && <p role="status">正在读取活动…</p>}
+      {detail.error && (
+        <button className="button secondary" onClick={detail.reload}>
+          重新加载活动
+        </button>
+      )}
       {a && (
         <>
           <section className="card activity-detail">
@@ -432,6 +441,12 @@ function MyBookings({
         )}
       </div>
       <Feedback error={action.error || detail.error} notice={action.notice} />
+      {id && detail.loading && <p role="status">正在读取预约…</p>}
+      {id && detail.error && (
+        <button className="button secondary" onClick={detail.reload}>
+          重新加载预约
+        </button>
+      )}
       {rows.map((b) => (
         <section className="card" key={b.id}>
           <div className="section-title">

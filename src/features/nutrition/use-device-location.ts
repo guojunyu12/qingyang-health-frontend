@@ -28,11 +28,19 @@ export function useDeviceLocation(onSearchCenter: (fix: DeviceFix | null) => voi
     }
     if (!navigator.geolocation) { setError("当前浏览器不支持设备定位，请用Safari或Chrome打开。"); return; }
     const current = ++generation.current;
+    let permissionRevision = 0;
     async function readPermission() {
+      const requestedRevision = ++permissionRevision;
       try {
         const result = await navigator.permissions.query({ name: "geolocation" });
-        if (current === generation.current) setPermission(result.state);
-      } catch { if (current === generation.current) setPermission("unknown"); }
+        if (current === generation.current && requestedRevision === permissionRevision) {
+          setPermission(result.state);
+        }
+      } catch {
+        if (current === generation.current && requestedRevision === permissionRevision) {
+          setPermission("unknown");
+        }
+      }
     }
     void readPermission();
     setWatching(true); setLocating(true);
@@ -52,6 +60,8 @@ export function useDeviceLocation(onSearchCenter: (fix: DeviceFix | null) => voi
         firstFixTimer.current = null;
         const next = { latitude, longitude, accuracy, timestamp: position.timestamp };
         setFix(next); setLocating(false); setError("");
+        // A successful position is newer evidence than an outstanding permission query.
+        permissionRevision++;
         setPermission("granted");
         const last = published.current;
         const meters = last ? distance(last.fix, next) : Infinity;

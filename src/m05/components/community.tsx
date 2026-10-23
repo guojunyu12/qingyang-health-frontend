@@ -108,29 +108,38 @@ function OwnCommunity({
     [version, setVersion] = useState(0),
     [target, setTarget] = useState(""),
     [report, setReport] = useState(false);
+  const profileReady = !profile.loading && !profile.error;
   return (
     <>
       <section className="card">
         <div className="section-title">
           <h2>我的社区名片</h2>
-          <span className="pill">
-            {profile.data?.discoverable ? "允许查看资料" : "资料默认隐藏"}
-          </span>
+          {profileReady && (
+            <span className="pill">
+              {profile.data?.discoverable ? "允许查看资料" : "资料默认隐藏"}
+            </span>
+          )}
         </div>
         <div className="participant">
           <span className="user-avatar">{user.nickname[0]}</span>
           <div>
             <h3>{user.nickname}</h3>
-            <p>{profile.data?.bio || "还没有填写个人简介"}</p>
+            {profileReady && <p>{profile.data?.bio || "还没有填写个人简介"}</p>}
           </div>
         </div>
         <p className="muted-text">
           只公开昵称、头像和简介。每次预约是否出现在参与者名单中，需要单独选择。
         </p>
         <Feedback error={profile.error} />
+        {profile.loading && <p role="status">正在读取社区资料…</p>}
+        {profile.error && (
+          <button className="button secondary" onClick={profile.reload}>
+            重新加载社区资料
+          </button>
+        )}
         <button
           className="button secondary"
-          disabled={profile.loading || Boolean(profile.error)}
+          disabled={!profileReady}
           onClick={() => {
             setBio(profile.data?.bio || "");
             setVisible(profile.data?.discoverable || false);
@@ -266,8 +275,20 @@ function PublicProfile({
       <Feedback error={action.error} notice={action.notice} />
       {profile.error ? (
         <section className="card empty">
-          <h2>资料暂不可见</h2>
-          <p>对方可能未开放资料，或你们之间存在屏蔽关系。</p>
+          {profile.errorStatus === 403 || profile.errorStatus === 404 ? (
+            <>
+              <h2>资料暂不可见</h2>
+              <p>对方可能未开放资料，或你们之间存在屏蔽关系。</p>
+            </>
+          ) : (
+            <>
+              <h2>资料读取失败</h2>
+              <Feedback error={profile.error} />
+              <button className="button secondary" onClick={profile.reload}>
+                重新加载社区资料
+              </button>
+            </>
+          )}
         </section>
       ) : profile.data ? (
         <section className="card">

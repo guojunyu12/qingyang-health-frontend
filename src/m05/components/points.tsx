@@ -92,10 +92,15 @@ export function H5Points({
     [error, setError] = useState(""),
     [notice, setNotice] = useState(""),
     [busy, setBusy] = useState(false),
+    [loading, setLoading] = useState(true),
+    [loadError, setLoadError] = useState(""),
     [revision, setRevision] = useState(0);
   const command = useCommand(user);
   useEffect(() => {
     let live = true;
+    setLoading(true);
+    setLoadError("");
+    setTasks(null);
     Promise.all([
       api<Account>("/api/v1/me/points/account"),
       api<Tasks>("/api/v1/me/points/tasks" + (date ? "?date=" + date : "")),
@@ -104,11 +109,13 @@ export function H5Points({
         if (live) {
           setAccount(a);
           setTasks(t);
-          setError("");
         }
       })
       .catch((e) => {
-        if (live) setError(e.message);
+        if (live) setLoadError(e.message);
+      })
+      .finally(() => {
+        if (live) setLoading(false);
       });
     return () => {
       live = false;
@@ -116,8 +123,13 @@ export function H5Points({
   }, [user.id, date, revision, refreshVersion]);
   const checkin = tasks?.items.find((t) => t.code === "daily_checkin");
   async function sign() {
+    if (
+      busy || loading || !tasks || tasks.historical || !checkin?.active ||
+      checkin.status === "completed"
+    ) return;
     setBusy(true);
     setError("");
+    setNotice("");
     try {
       const r = await command<{ alreadyCompleted: boolean; account: Account }>(
         "/api/v1/me/points/check-in",
@@ -139,6 +151,19 @@ export function H5Points({
   }
   return (
     <>
+      {loadError && (
+        <div>
+          <p className="alert" role="alert">
+            {loadError}
+          </p>
+          <button
+            className="button secondary"
+            onClick={() => setRevision((v) => v + 1)}
+          >
+            重新加载积分任务
+          </button>
+        </div>
+      )}
       {error && (
         <p className="alert" role="alert">
           {error}
@@ -180,15 +205,19 @@ export function H5Points({
                 !checkin?.active
               }
             >
-              {!tasks
-                ? "正在读取任务"
-                : tasks.historical
-                  ? "历史记录只读"
-                  : checkin?.status === "completed"
-                    ? "今日已签到"
-                    : !checkin?.active
-                      ? "签到暂停"
-                      : `签到 +${checkin.rewardPoints}`}
+              {busy
+                ? "正在签到…"
+                : !tasks
+                  ? loading
+                    ? "正在读取任务"
+                    : "任务读取失败"
+                  : tasks.historical
+                    ? "历史记录只读"
+                    : checkin?.status === "completed"
+                      ? "今日已签到"
+                      : !checkin?.active
+                        ? "签到暂停"
+                        : `签到 +${checkin.rewardPoints}`}
             </button>
             <p className="muted-text">{tasks?.serverDate} · 上海时间</p>
           </div>
@@ -387,11 +416,20 @@ function LedgerView({
         </button>
       </div>
       {error && (
-        <p className="alert" role="alert">
-          {error}
-        </p>
+        <div>
+          <p className="alert" role="alert">
+            {error}
+          </p>
+          <button
+            className="button secondary"
+            disabled={loading}
+            onClick={() => void load()}
+          >
+            重新加载流水
+          </button>
+        </div>
       )}
-      {!data.items.length ? (
+      {!data.items.length && !error ? (
         <p className="ledger-empty">
           {loading
             ? "正在读取账本…"
